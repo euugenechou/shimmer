@@ -1,5 +1,8 @@
 pub use shimmer_macro::{shimmer, shimmer_hook};
 pub use shimmer_trait::Shimmer;
+pub mod prelude {
+    pub use crate::*;
+}
 
 #[cfg(test)]
 mod tests {
