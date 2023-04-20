@@ -1,17 +1,42 @@
-use libc::{c_int, size_t};
-use shimmer::prelude::*;
+use shimmer::{shimmer, shimmer_hook};
 
 #[shimmer]
 #[derive(Default)]
 struct State {}
 
+trait BasicIO {
+    unsafe fn read(
+        &mut self,
+        fd: libc::c_int,
+        buf: *mut libc::c_void,
+        nbytes: libc::size_t,
+    ) -> libc::c_int;
+
+    unsafe fn write(
+        &mut self,
+        fd: libc::c_int,
+        buf: *mut libc::c_void,
+        nbytes: libc::size_t,
+    ) -> libc::c_int;
+}
+
 #[shimmer_hook]
-impl Shimmer for State {
-    unsafe fn read(&mut self, fd: c_int, buf: *mut std::ffi::c_void, nbytes: size_t) -> c_int {
+impl BasicIO for State {
+    unsafe fn read(
+        &mut self,
+        fd: libc::c_int,
+        buf: *mut libc::c_void,
+        nbytes: libc::size_t,
+    ) -> libc::c_int {
         println!("[read] fd={fd}, size={nbytes}");
     }
 
-    unsafe fn write(&mut self, fd: c_int, buf: *mut std::ffi::c_void, nbytes: size_t) -> c_int {
+    unsafe fn write(
+        &mut self,
+        fd: libc::c_int,
+        buf: *mut libc::c_void,
+        nbytes: libc::size_t,
+    ) -> libc::c_int {
         println!("[write] fd={fd}, size={nbytes}");
     }
 }

@@ -1,5 +1,5 @@
 pub use shimmer_macro::{shimmer, shimmer_hook};
-pub use shimmer_trait::Shimmer;
+
 pub mod prelude {
     pub use crate::*;
 }
@@ -14,6 +14,12 @@ mod tests {
         arg2: usize,
     }
 
+    impl Default for State {
+        fn default() -> Self {
+            Self { arg1: 45, arg2: 13 }
+        }
+    }
+
     impl State {
         fn increment_arg1(&mut self) {
             self.arg1 += 1;
@@ -24,14 +30,24 @@ mod tests {
         }
     }
 
-    impl Default for State {
-        fn default() -> Self {
-            Self { arg1: 45, arg2: 13 }
-        }
+    trait BasicIO {
+        unsafe fn read(
+            &mut self,
+            fd: libc::c_int,
+            buf: *mut libc::c_void,
+            nbytes: libc::size_t,
+        ) -> libc::c_int;
+
+        unsafe fn write(
+            &mut self,
+            fd: libc::c_int,
+            buf: *mut libc::c_void,
+            nbytes: libc::size_t,
+        ) -> libc::c_int;
     }
 
     #[shimmer_hook]
-    impl Shimmer for State {
+    impl BasicIO for State {
         unsafe fn read(
             &mut self,
             fd: libc::c_int,
