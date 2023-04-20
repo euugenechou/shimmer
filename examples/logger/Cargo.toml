@@ -1,0 +1,20 @@
+[package]
+name = "logger-shimmer"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "logger"
+crate_type = ["dylib"]
+
+[dependencies]
+lazy_static = "1.4.0"
+libc = "0.2.141"
+redhook = "2.0.0"
+serde = "1.0"
+serde_yaml = "0.9"
+shimmer = { path = "../.." }
+log = "0.4.0"
+log4rs = "1.2.0"

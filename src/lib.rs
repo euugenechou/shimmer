@@ -1,5 +1,46 @@
 pub use shimmer_macro::{shimmer, shimmer_hook};
 
+#[macro_export]
+macro_rules! shimmer_print {
+    ($($args:tt)*) => {{
+        unsafe {
+            let mut msg = format!($($args)*);
+            libc::syscall(
+                libc::SYS_write,
+                libc::STDOUT_FILENO,
+                msg.as_bytes().as_ptr(),
+                msg.as_bytes().len(),
+            );
+        };
+    }};
+}
+
+#[macro_export]
+macro_rules! shimmer_println {
+    () => {{
+        unsafe {
+            let msg = "\n";
+            libc::syscall(
+                libc::SYS_write,
+                libc::STDOUT_FILENO,
+                msg.as_bytes().as_ptr(),
+                msg.as_bytes().len(),
+            );
+        };
+    }};
+    ($($args:tt)*) => {{
+        unsafe {
+            let msg = format!($($args)*) + "\n";
+            libc::syscall(
+                libc::SYS_write,
+                libc::STDOUT_FILENO,
+                msg.as_bytes().as_ptr(),
+                msg.as_bytes().len(),
+            );
+        };
+    }};
+}
+
 pub mod prelude {
     pub use crate::*;
 }
