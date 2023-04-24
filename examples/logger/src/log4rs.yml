@@ -1,0 +1,20 @@
+appenders:
+    file:
+        kind: rolling_file
+        path: /tmp/shimmer.log
+        encoder:
+            pattern: "{d(%+)(utc)} {h({l})} {m}{n}"
+        filters:
+            - kind: threshold
+              level: trace
+        policy:
+          trigger:
+            kind: size
+            limit: 100Mb
+          roller:
+            kind: delete
+root:
+    level: trace
+    appenders:
+        - file
+
