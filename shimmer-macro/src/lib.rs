@@ -106,23 +106,27 @@ fn build_hooks(mut impl_fns: Vec<ImplItemFn>) -> Vec<TokenStream2> {
                 })
                 .collect::<Vec<_>>();
 
-            // Generate actual call.
-            let call = parse2::<Expr>(quote! {
-                redhook::real!(#real)(#(#args,)*)
-            })
-            .unwrap();
+            // Add `lazy_static` initializer statement.
+            ast.block.stmts.insert(
+                0,
+                parse2::<Stmt>(quote! {
+                    lazy_static::initialize(&SHIMMER_SHARED_STATE);
+                })
+                .unwrap(),
+            );
 
-            // Absolute hack keklmfao
-            let hack = parse2::<Stmt>(quote! {
-                lazy_static::initialize(&SHIMMER_SHARED_STATE);
-            })
-            .unwrap();
+            // Add actual call to the hooked function.
+            ast.block.stmts.push(syn::Stmt::Expr(
+                parse2::<Expr>(quote! {
+                    redhook::real!(#real)(#(#args,)*)
+                })
+                .unwrap(),
+                None,
+            ));
 
-            // Add actual call to the block.
-            ast.block.stmts.insert(0, hack);
-            ast.block.stmts.push(syn::Stmt::Expr(call, None));
             let block = &ast.block;
 
+            // Generate the hook.
             quote! {
                 redhook::hook! {
                     #sig => #name #block
