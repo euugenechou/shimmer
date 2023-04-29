@@ -6,6 +6,9 @@ macro_rules! shimmer_print {
         unsafe {
             let mut msg = format!($($args)*);
             libc::syscall(
+                #[cfg(target_os = "macos")]
+                4,
+                #[cfg(not(target_os = "macos"))]
                 libc::SYS_write,
                 libc::STDOUT_FILENO,
                 msg.as_bytes().as_ptr(),
@@ -21,6 +24,9 @@ macro_rules! shimmer_println {
         unsafe {
             let msg = "\n";
             libc::syscall(
+                #[cfg(target_os = "macos")]
+                4,
+                #[cfg(not(target_os = "macos"))]
                 libc::SYS_write,
                 libc::STDOUT_FILENO,
                 msg.as_bytes().as_ptr(),
@@ -32,6 +38,9 @@ macro_rules! shimmer_println {
         unsafe {
             let msg = format!($($args)*) + "\n";
             libc::syscall(
+                #[cfg(target_os = "macos")]
+                4,
+                #[cfg(not(target_os = "macos"))]
                 libc::SYS_write,
                 libc::STDOUT_FILENO,
                 msg.as_bytes().as_ptr(),
@@ -71,24 +80,8 @@ mod tests {
         }
     }
 
-    trait BasicIO {
-        unsafe fn read(
-            &mut self,
-            fd: libc::c_int,
-            buf: *mut libc::c_void,
-            nbytes: libc::size_t,
-        ) -> libc::c_int;
-
-        unsafe fn write(
-            &mut self,
-            fd: libc::c_int,
-            buf: *mut libc::c_void,
-            nbytes: libc::size_t,
-        ) -> libc::c_int;
-    }
-
     #[shimmer_hook]
-    impl BasicIO for State {
+    impl State {
         unsafe fn read(
             &mut self,
             fd: libc::c_int,
