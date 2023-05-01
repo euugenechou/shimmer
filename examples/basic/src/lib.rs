@@ -4,17 +4,8 @@ use shimmer::prelude::*;
 #[derive(Default)]
 struct State {}
 
-trait BasicIO {
-    unsafe fn write(
-        &mut self,
-        fd: libc::c_int,
-        buf: *mut libc::c_void,
-        nbytes: libc::size_t,
-    ) -> libc::c_int;
-}
-
 #[shimmer_hook]
-impl BasicIO for State {
+impl State {
     unsafe fn write(
         &mut self,
         fd: libc::c_int,

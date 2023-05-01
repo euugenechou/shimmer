@@ -3,7 +3,7 @@ use proc_macro2::{Group, Span, TokenStream as TokenStream2, TokenTree};
 use quote::{quote, ToTokens};
 use syn::{
     parse2, parse_macro_input, punctuated::Punctuated, token::Comma, DeriveInput, Expr, FnArg,
-    Ident, ImplItem, ImplItemFn, ItemFn, ItemImpl, Pat, Stmt,
+    Ident, ImplItem, ImplItemFn, ItemFn, ItemImpl, Pat,
 };
 
 #[proc_macro_attribute]
@@ -106,27 +106,22 @@ fn build_hooks(mut impl_fns: Vec<ImplItemFn>) -> Vec<TokenStream2> {
                 })
                 .collect::<Vec<_>>();
 
-            // Add `lazy_static` initializer statement.
-            ast.block.stmts.insert(
-                0,
-                parse2::<Stmt>(quote! {
-                    lazy_static::initialize(&SHIMMER_SHARED_STATE);
-                })
-                .unwrap(),
-            );
+            // Generate actual call.
+            let call = parse2::<Expr>(quote! {
+                redhook::real!(#real)(#(#args,)*)
+            })
+            .unwrap();
 
-            // Add actual call to the hooked function.
-            ast.block.stmts.push(syn::Stmt::Expr(
-                parse2::<Expr>(quote! {
-                    redhook::real!(#real)(#(#args,)*)
-                })
-                .unwrap(),
-                None,
-            ));
+            let hack = parse2::<Expr>(quote! {
+                lazy_static::initialize(&SHIMMER_SHARED_STATE)
+            })
+            .unwrap();
 
+            // Add hack and actual call to the block.
+            ast.block.stmts.insert(0, syn::Stmt::Expr(hack, None));
+            ast.block.stmts.push(syn::Stmt::Expr(call, None));
             let block = &ast.block;
 
-            // Generate the hook.
             quote! {
                 redhook::hook! {
                     #sig => #name #block
