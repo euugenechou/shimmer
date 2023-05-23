@@ -1,13 +1,14 @@
-use log::info;
+use log::*;
 use shimmer::prelude::*;
+use simple_logger::SimpleLogger;
 
 #[shimmer]
 struct State {}
 
 impl Default for State {
     fn default() -> Self {
-        let config = serde_yaml::from_str(include_str!("log4rs.yml")).unwrap();
-        log4rs::init_raw_config(config).unwrap();
+        SimpleLogger::new().init().unwrap();
+        log::set_max_level(LevelFilter::Info);
         Self {}
     }
 }
