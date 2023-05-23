@@ -50,6 +50,56 @@ macro_rules! shimmer_println {
     }};
 }
 
+#[macro_export]
+macro_rules! shimmer_eprint {
+    ($($args:tt)*) => {{
+        unsafe {
+            let mut msg = format!($($args)*);
+            libc::syscall(
+                #[cfg(target_os = "macos")]
+                4,
+                #[cfg(not(target_os = "macos"))]
+                libc::SYS_write,
+                libc::STDERR_FILENO,
+                msg.as_bytes().as_ptr(),
+                msg.as_bytes().len(),
+            );
+        };
+    }};
+}
+
+#[macro_export]
+macro_rules! shimmer_eprintln {
+    () => {{
+        unsafe {
+            let msg = "\n";
+            libc::syscall(
+                #[cfg(target_os = "macos")]
+                4,
+                #[cfg(not(target_os = "macos"))]
+                libc::SYS_write,
+                libc::STDERR_FILENO,
+                msg.as_bytes().as_ptr(),
+                msg.as_bytes().len(),
+            );
+        };
+    }};
+    ($($args:tt)*) => {{
+        unsafe {
+            let msg = format!($($args)*) + "\n";
+            libc::syscall(
+                #[cfg(target_os = "macos")]
+                4,
+                #[cfg(not(target_os = "macos"))]
+                libc::SYS_write,
+                libc::STDERR_FILENO,
+                msg.as_bytes().as_ptr(),
+                msg.as_bytes().len(),
+            );
+        };
+    }};
+}
+
 pub mod prelude {
     pub use crate::*;
 }

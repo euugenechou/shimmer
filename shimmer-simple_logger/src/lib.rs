@@ -33,7 +33,7 @@
 #[cfg(feature = "colored")]
 use colored::*;
 use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
-use shimmer::shimmer_println;
+use shimmer::prelude::*;
 use std::{collections::HashMap, str::FromStr};
 #[cfg(feature = "timestamps")]
 use time::{format_description::FormatItem, OffsetDateTime, UtcOffset};
@@ -478,10 +478,14 @@ impl Log for SimpleLogger {
 
             let message = format!("{}{} [{}{}] {}", timestamp, level_string, target, thread, record.args());
 
-            #[cfg(not(feature = "stderr"))]
+            #[cfg(all(not(target_os = "macos"), not(feature = "stderr")))]
             shimmer_println!("{}", message);
+            #[cfg(all(target_os = "macos", not(feature = "stderr")))]
+            println!("{}", message);
 
-            #[cfg(feature = "stderr")]
+            #[cfg(all(not(target_os = "macos"), feature = "stderr"))]
+            shimmer_eprintln!("{}", message);
+            #[cfg(all(target_os = "macos", feature = "stderr"))]
             eprintln!("{}", message);
         }
     }
